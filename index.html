@@ -3,38 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Collector's Vault</title>
-
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <main class="register-page">
+  <main class="page">
 
-    <section class="register-panel">
+    <section class="register-card">
 
       <div class="brand">
         <h1>Collector's Vault</h1>
         <p>Art Trading Card Registry</p>
       </div>
 
-      <div class="register-content">
+      <div class="content">
 
         <p class="eyebrow">WELCOME TO THE VAULT</p>
 
         <h2>Register Your Card</h2>
 
-        <p class="register-description">
-          Enter the ID printed on your art trading card to add it
-          to your collection.
+        <p class="description">
+          Enter the ID printed on your art trading card to add it to your collection.
         </p>
 
         <form id="card-form">
 
-          <label for="card-id">
-            Card ID
+          <label for="card-id">Card ID</label>
+
+          <input
+            type="text"
+            id="card-id"
+            placeholder="SW-XXXXXXXX"
+            autocomplete="off"
+            required
+          >
+
+          <button type="submit">
+            Register Card
+          </button>
+
+        </form>
+
+        <div id="message"></div>
+
+        <div class="signin">
+          <span>Already registered?</span>
+          <a href="login.html">Sign in to your Vault</a>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const form = document.getElementById("card-form");
+    const input = document.getElementById("card-id");
+    const message = document.getElementById("message");
+
+    const params = new URLSearchParams(window.location.search);
+    const cardFromQR = params.get("card");
+
+    if (cardFromQR) {
+      input.value = cardFromQR;
+    }
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const cardId = input.value.trim().toUpperCase();
+
+      message.textContent = "Checking card...";
+
+      const { data: card, error } = await supabaseClient
+        .from("cards")
+        .select("id, name")
+        .eq("id", cardId)
+        .maybeSingle();
+
+      if (error) {
+        console.error(error);
+        message.textContent = "Something went wrong. Please try again.";
+        return;
+      }
+
+      if (!card) {
+        message.textContent = "We couldn't find a card with that ID.";
+        return;
+      }
+
+      message.innerHTML = `
+        <div class="card-found">
+          <small>Card found</small>
+          <strong>${card.name}</strong>
+          <span>${card.id}</span>
+        </div>
+      `;
+    });
+  </script>
+
+</body>
+</html>            Card ID
           </label>
 
           <input
