@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Vault | Collector's Vault</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="register-card">
+
+      <div class="brand">
+        <h1>Collector's Vault</h1>
+        <p>My Collection</p>
+      </div>
+
+      <div class="content">
+
+        <p class="eyebrow">MY VAULT</p>
+
+        <h2>Your Collection</h2>
+
+        <p class="description">
+          Cards registered to your account will appear here.
+        </p>
+
+        <div id="user-status"></div>
+
+        <div id="vault-list"></div>
+
+        <button id="signout-button" style="display:none;">
+          Sign Out
+        </button>
+
+        <div class="signin">
+          <a href="/">← Register another card</a>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const userStatus = document.getElementById("user-status");
+    const vaultList = document.getElementById("vault-list");
+    const signoutButton = document.getElementById("signout-button");
+
+    async function loadVault() {
+
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+      if (!user) {
+        userStatus.innerHTML = `
+          <div class="card-found">
+            <small>Not signed in</small>
+            <strong>Please sign in to view your Vault.</strong>
+          </div>
+        `;
+
+        vaultList.innerHTML = `
+          <div class="signin">
+            <a href="login.html">Sign in</a>
+          </div>
+        `;
+
+        return;
+      }
+
+      userStatus.innerHTML = `
+        <div class="card-found">
+          <small>Signed in as</small>
+          <strong>${user.email}</strong>
+        </div>
+      `;
+
+      signoutButton.style.display = "block";
+
+      const { data: ownerships, error } = await supabaseClient
+        .from("ownerships")
+        .select(`
+          id,
+          registered_at,
+          card_id,
+          cards (
+            id,
+            name
+          )
+        `)
+        .eq("owner_id", user.id)
+        .eq("active", true)
+        .order("registered_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+
+        vaultList.innerHTML = `
+          <p>We couldn't load your collection.</p>
+        `;
+
+        return;
+      }
+
+      if (!ownerships || ownerships.length === 0) {
+        vaultList.innerHTML = `
+          <div class="card-found">
+            <small>Your Vault is empty</small>
+            <strong>No cards registered yet.</strong>
+          </div>
+        `;
+
+        return;
+      }
+
+      vaultList.innerHTML = ownerships.map(record => `
+        <div class="card-found" style="margin-top:12px;">
+          <small>${record.card_id}</small>
+          <strong>${record.cards?.name || "Unnamed Card"}</strong>
+          <span>
+            Registered ${new Date(record.registered_at).toLocaleDateString()}
+          </span>
+        </div>
+      `).join("");
+    }
+
+    signoutButton.addEventListener("click", async function() {
+      await supabaseClient.auth.signOut();
+      window.location.href = "/";
+    });
+
+    loadVault();
+  </script>
+
+</body>
+</html>
