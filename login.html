@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In | Collector's Vault</title>
+  <title>Secure My Vault | Collector's Vault</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,27 +11,30 @@
 
   <main class="page">
 
-    <section class="register-card">
+    <section class="panel">
 
       <div class="brand">
         <h1>Collector's Vault</h1>
-        <p>Art Trading Card Registry</p>
+        <p>Secure Your Collection</p>
       </div>
 
       <div class="content">
 
         <p class="eyebrow">YOUR VAULT</p>
 
-        <h2>Sign In</h2>
+        <h2>Secure My Vault</h2>
 
         <p class="description">
-          Enter your email and we'll send you a secure sign-in link.
-          No password needed.
+          Add your email so you can recover your collection on another device.
         </p>
+
+        <div id="user-status"></div>
 
         <form id="login-form">
 
-          <label for="email">Email</label>
+          <label for="email">
+            Email
+          </label>
 
           <input
             type="email"
@@ -41,16 +44,18 @@
             required
           >
 
-          <button type="submit">
-            Send Sign-In Link
+          <button type="submit" id="login-button">
+            Send Secure Link
           </button>
 
         </form>
 
         <div id="message"></div>
 
-        <div class="signin">
-          <a href="/">← Register a card</a>
+        <div class="page-links">
+          <a href="vault.html" class="text-link">
+            ← Back to My Vault
+          </a>
         </div>
 
       </div>
@@ -70,6 +75,48 @@
 
     const form = document.getElementById("login-form");
     const message = document.getElementById("message");
+    const userStatus = document.getElementById("user-status");
+    const loginButton = document.getElementById("login-button");
+
+    async function initializePage() {
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+      if (!user) {
+        userStatus.innerHTML = `
+          <div class="status-box">
+            <small>No Vault found</small>
+            <strong>Register a card first to create your Vault.</strong>
+          </div>
+        `;
+
+        form.style.display = "none";
+        return;
+      }
+
+      if (!user.is_anonymous) {
+        userStatus.innerHTML = `
+          <div class="status-box success-box">
+            <small>Vault already secured</small>
+            <strong>${user.email}</strong>
+          </div>
+        `;
+
+        form.style.display = "none";
+        return;
+      }
+
+      userStatus.innerHTML = `
+        <div class="status-box notice-box">
+          <small>Temporary Vault</small>
+          <strong>Your collection is currently saved on this device.</strong>
+          <span>
+            Adding an email lets you recover this same Vault later.
+          </span>
+        </div>
+      `;
+    }
 
     form.addEventListener("submit", async function(event) {
       event.preventDefault();
@@ -79,33 +126,61 @@
         .value
         .trim();
 
-      message.textContent = "Sending sign-in link...";
+      loginButton.disabled = true;
+      loginButton.textContent = "Sending Link...";
 
-      const { error } = await supabaseClient.auth.signInWithOtp({
-        email: email,
-        options: {
-          emailRedirectTo:
-            "https://collectors-vault.jennlarps.workers.dev/vault.html"
-        }
+      message.innerHTML = "";
+
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+      if (!user || !user.is_anonymous) {
+        message.innerHTML = `
+          <div class="status-box">
+            <small>Unable to continue</small>
+            <strong>This Vault is not an anonymous Vault.</strong>
+          </div>
+        `;
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Send Secure Link";
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.updateUser({
+        email: email
       });
 
       if (error) {
         console.error(error);
-        message.textContent =
-          "We couldn't send the sign-in link. Please try again.";
+
+        message.innerHTML = `
+          <div class="status-box">
+            <small>Unable to send link</small>
+            <strong>${error.message}</strong>
+          </div>
+        `;
+
+        loginButton.disabled = false;
+        loginButton.textContent = "Send Secure Link";
         return;
       }
 
       message.innerHTML = `
-        <div class="card-found">
+        <div class="status-box success-box">
           <small>Check your email</small>
-          <strong>Sign-in link sent</strong>
+          <strong>We sent a confirmation link to ${email}.</strong>
           <span>
-            Open the link we sent to ${email}.
+            Open that link to secure this Vault to your email.
           </span>
         </div>
       `;
+
+      form.style.display = "none";
     });
+
+    initializePage();
   </script>
 
 </body>
