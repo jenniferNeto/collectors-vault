@@ -1,40 +1,232 @@
-/* =========================
-   BASE
-========================= */
-
 * {
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
+  margin: 0;
+  min-height: 100%;
 }
 
 body {
-  margin: 0;
-  background: #111111;
-  color: #f5f5f5;
+  background: #0e0e0f;
+  color: #f4f2f4;
   font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.5;
 }
 
-a {
-  color: inherit;
+.register-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px 20px;
 }
 
+.register-panel {
+  width: 100%;
+  max-width: 520px;
 
-/* =========================
-   HEADER
-========================= */
+  background: #171719;
 
-header {
+  border: 1px solid #303034;
+  border-radius: 18px;
+
+  overflow: hidden;
+}
+
+.brand {
   text-align: center;
-  padding: 32px 20px;
-  border-bottom: 1px solid #333333;
+
+  padding: 30px 25px;
+
+  border-bottom: 1px solid #303034;
 }
 
-header h1 {
+.brand h1 {
   margin: 0;
+
+  font-size: 2rem;
+}
+
+.brand p {
+  margin: 5px 0 0;
+
+  color: #8e8e93;
+  font-size: 0.9rem;
+}
+
+.register-content {
+  padding: 45px 40px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+
+  color: #8e8e93;
+
+  font-size: 0.72rem;
+  font-weight: bold;
+
+  letter-spacing: 0.15em;
+}
+
+.register-content h2 {
+  margin: 0;
+
+  font-size: 2.3rem;
+}
+
+.register-description {
+  margin: 12px 0 30px;
+
+  color: #aaa9ae;
+
+  line-height: 1.6;
+}
+
+label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+
+  padding: 15px 16px;
+
+  background: #0f0f10;
+  color: #ffffff;
+
+  border: 1px solid #3a3a3e;
+  border-radius: 9px;
+
+  font: inherit;
+
+  outline: none;
+
+  text-transform: uppercase;
+}
+
+input:focus {
+  border-color: #8d8d94;
+}
+
+.primary-button {
+  width: 100%;
+
+  margin-top: 14px;
+  padding: 15px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #f2f2f2;
+  color: #111111;
+
+  font-size: 0.95rem;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background: #ffffff;
+}
+
+#message {
+  margin-top: 20px;
+}
+
+.card-found {
+  display: flex;
+  flex-direction: column;
+
+  padding: 16px;
+
+  background: #202023;
+
+  border: 1px solid #36363a;
+  border-radius: 9px;
+}
+
+.card-found span {
+  margin-bottom: 5px;
+
+  color: #8e8e93;
+
+  font-size: 0.7rem;
+  font-weight: bold;
+
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.card-found strong {
+  font-size: 1.1rem;
+}
+
+.card-found small {
+  margin-top: 3px;
+
+  color: #8e8e93;
+}
+
+.account-section {
+  text-align: center;
+
+  padding: 22px;
+
+  background: #121214;
+
+  border-top: 1px solid #303034;
+}
+
+.account-section p {
+  display: inline;
+
+  margin: 0;
+
+  color: #88888d;
+
+  font-size: 0.85rem;
+}
+
+.account-section a {
+  margin-left: 5px;
+
+  color: #eeeeee;
+
+  font-size: 0.85rem;
+  font-weight: bold;
+
+  text-decoration: none;
+}
+
+.account-section a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 550px) {
+
+  .register-page {
+    padding: 18px;
+  }
+
+  .register-content {
+    padding: 35px 25px;
+  }
+
+  .register-content h2 {
+    font-size: 2rem;
+  }
+
+}  margin: 0;
   font-size: 2.2rem;
 }
 
