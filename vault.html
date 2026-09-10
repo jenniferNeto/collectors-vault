@@ -28,6 +28,8 @@
           Cards registered to this Vault appear here.
         </p>
 
+        <div id="merge-message"></div>
+
         <div id="user-status"></div>
 
         <div id="transfer-message"></div>
@@ -78,22 +80,154 @@
       SUPABASE_KEY
     );
 
-    const userStatus = document.getElementById("user-status");
-    const vaultList = document.getElementById("vault-list");
-    const transferMessage = document.getElementById("transfer-message");
-    const signoutButton = document.getElementById("signout-button");
-    const secureVaultLink = document.getElementById("secure-vault-link");
+    const userStatus =
+      document.getElementById("user-status");
 
-    async function loadVault() {
+    const vaultList =
+      document.getElementById("vault-list");
+
+    const transferMessage =
+      document.getElementById("transfer-message");
+
+    const mergeMessage =
+      document.getElementById("merge-message");
+
+    const signoutButton =
+      document.getElementById("signout-button");
+
+    const secureVaultLink =
+      document.getElementById("secure-vault-link");
+
+
+    async function processVaultMerge() {
+
+      const params =
+        new URLSearchParams(window.location.search);
+
+      const mergeToken =
+        params.get("merge_token");
+
+
+      if (!mergeToken) {
+        return;
+      }
+
+
+      mergeMessage.innerHTML = `
+        <div class="status-box notice-box">
+          <small>Updating Vault</small>
+          <strong>
+            Adding your temporary cards...
+          </strong>
+        </div>
+      `;
+
+
+      /*
+       * Give Supabase a moment to finish processing
+       * the authentication redirect.
+       */
+
+      await new Promise(resolve =>
+        setTimeout(resolve, 800)
+      );
+
+
       const {
         data: { user }
       } = await supabaseClient.auth.getUser();
 
+
       if (!user) {
+
+        mergeMessage.innerHTML = `
+          <div class="status-box">
+            <small>Merge incomplete</small>
+            <strong>
+              We couldn't verify your account.
+            </strong>
+          </div>
+        `;
+
+        return;
+      }
+
+
+      const {
+        data: movedCards,
+        error
+      } =
+        await supabaseClient.rpc(
+          "merge_vault_with_token",
+          {
+            p_token: mergeToken
+          }
+        );
+
+
+      if (error) {
+
+        console.error(error);
+
+        mergeMessage.innerHTML = `
+          <div class="status-box">
+            <small>Merge issue</small>
+            <strong>${error.message}</strong>
+          </div>
+        `;
+
+        return;
+      }
+
+
+      mergeMessage.innerHTML = `
+        <div class="status-box success-box">
+
+          <small>Vault updated</small>
+
+          <strong>
+            ${
+              movedCards === 1
+                ? "1 card was added to your existing Vault."
+                : movedCards + " cards were added to your existing Vault."
+            }
+          </strong>
+
+          <span>
+            Your collection is now together under this account.
+          </span>
+
+        </div>
+      `;
+
+
+      /*
+       * Remove the merge token from the browser address.
+       */
+
+      window.history.replaceState(
+        {},
+        document.title,
+        "vault.html"
+      );
+    }
+
+
+    async function loadVault() {
+
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+
+      if (!user) {
+
         userStatus.innerHTML = `
           <div class="status-box">
             <small>No Vault found</small>
-            <strong>Register a card to create your Vault.</strong>
+            <strong>
+              Register a card to create your Vault.
+            </strong>
           </div>
         `;
 
@@ -106,32 +240,54 @@
         return;
       }
 
-      const isAnonymous = user.is_anonymous === true;
+
+      const isAnonymous =
+        user.is_anonymous === true;
+
 
       if (isAnonymous) {
+
         userStatus.innerHTML = `
           <div class="status-box notice-box">
+
             <small>Temporary Vault</small>
-            <strong>Your collection is saved on this device.</strong>
+
+            <strong>
+              Your collection is saved on this device.
+            </strong>
+
             <span>
-              Secure your Vault with an email so you can recover it on another device.
+              Secure your Vault with an email so you can
+              recover it on another device.
             </span>
+
           </div>
         `;
 
         secureVaultLink.style.display = "block";
+
       } else {
+
         userStatus.innerHTML = `
           <div class="status-box success-box">
+
             <small>Vault secured</small>
-            <strong>${user.email}</strong>
+
+            <strong>
+              ${user.email}
+            </strong>
+
           </div>
         `;
 
         signoutButton.style.display = "block";
       }
 
-      const { data: ownerships, error } =
+
+      const {
+        data: ownerships,
+        error
+      } =
         await supabaseClient
           .from("ownerships")
           .select(`
@@ -145,21 +301,30 @@
           `)
           .eq("owner_id", user.id)
           .eq("active", true)
-          .order("registered_at", { ascending: false });
+          .order(
+            "registered_at",
+            { ascending: false }
+          );
+
 
       if (error) {
+
         console.error(error);
 
         vaultList.innerHTML = `
           <div class="status-box">
-            <strong>We couldn't load your collection.</strong>
+            <strong>
+              We couldn't load your collection.
+            </strong>
           </div>
         `;
 
         return;
       }
 
+
       if (!ownerships || ownerships.length === 0) {
+
         vaultList.innerHTML = `
           <div class="status-box">
             <small>Your Vault is empty</small>
@@ -170,92 +335,134 @@
         return;
       }
 
-      vaultList.innerHTML = ownerships.map(record => `
-        <div class="vault-item">
 
-          <div class="vault-card-info">
-            <small>${record.card_id}</small>
+      vaultList.innerHTML =
+        ownerships.map(record => `
 
-            <strong>
-              ${record.cards?.name || "Unnamed Card"}
-            </strong>
+          <div class="vault-item">
 
-            <span>
-              Registered
-              ${new Date(record.registered_at).toLocaleDateString()}
-            </span>
+            <div class="vault-card-info">
+
+              <small>
+                ${record.card_id}
+              </small>
+
+              <strong>
+                ${record.cards?.name || "Unnamed Card"}
+              </strong>
+
+              <span>
+                Registered
+                ${
+                  new Date(
+                    record.registered_at
+                  ).toLocaleDateString()
+                }
+              </span>
+
+            </div>
+
+            <button
+              class="secondary-button transfer-button"
+              data-ownership-id="${record.id}"
+              type="button"
+            >
+              Transfer Card
+            </button>
+
           </div>
 
-          <button
-            class="secondary-button transfer-button"
-            data-ownership-id="${record.id}"
-            type="button"
-          >
-            Transfer Card
-          </button>
+        `).join("");
 
-        </div>
-      `).join("");
 
       document
         .querySelectorAll(".transfer-button")
         .forEach(button => {
 
-          button.addEventListener("click", async function() {
-            const ownershipId = this.dataset.ownershipId;
+          button.addEventListener(
+            "click",
+            async function() {
 
-            transferMessage.textContent =
-              "Creating transfer code...";
+              const ownershipId =
+                this.dataset.ownershipId;
 
-            const { data: code, error } =
-              await supabaseClient.rpc(
-                "create_transfer",
-                {
-                  p_ownership_id: ownershipId
-                }
-              );
+              transferMessage.textContent =
+                "Creating transfer code...";
 
-            if (error) {
-              console.error(error);
+
+              const {
+                data: code,
+                error
+              } =
+                await supabaseClient.rpc(
+                  "create_transfer",
+                  {
+                    p_ownership_id:
+                      ownershipId
+                  }
+                );
+
+
+              if (error) {
+
+                console.error(error);
+
+                transferMessage.innerHTML = `
+                  <div class="status-box">
+                    <small>Transfer error</small>
+                    <strong>${error.message}</strong>
+                  </div>
+                `;
+
+                return;
+              }
+
 
               transferMessage.innerHTML = `
-                <div class="status-box">
-                  <small>Transfer error</small>
-                  <strong>${error.message}</strong>
+                <div
+                  class="status-box success-box transfer-code-box"
+                >
+
+                  <small>Transfer code</small>
+
+                  <strong class="transfer-code">
+                    ${code}
+                  </strong>
+
+                  <span>
+                    Give this code to the person receiving
+                    the card. It expires in 7 days.
+                  </span>
+
                 </div>
               `;
-
-              return;
             }
-
-            transferMessage.innerHTML = `
-              <div class="status-box success-box transfer-code-box">
-                <small>Transfer code</small>
-
-                <strong class="transfer-code">
-                  ${code}
-                </strong>
-
-                <span>
-                  Give this code to the person receiving the card.
-                  It expires in 7 days.
-                </span>
-              </div>
-            `;
-          });
+          );
 
         });
     }
 
+
     signoutButton.addEventListener(
       "click",
       async function() {
+
         await supabaseClient.auth.signOut();
+
         window.location.href = "/";
       }
     );
 
-    loadVault();
+
+    async function initializeVault() {
+
+      await processVaultMerge();
+
+      await loadVault();
+    }
+
+
+    initializeVault();
   </script>
 
 </body>
