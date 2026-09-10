@@ -11,30 +11,135 @@
 
 <body>
 
-  <header>
-    <h1>Collector's Vault</h1>
-    <p>Art Trading Card Registry</p>
-  </header>
+  <main class="register-page">
 
-  <main>
+    <section class="register-panel">
 
-    <section class="hero">
-      <h2>Collect. Register. Trade.</h2>
+      <div class="brand">
+        <h1>Collector's Vault</h1>
+        <p>Art Trading Card Registry</p>
+      </div>
 
-      <p>
-        Collector's Vault is a registry for physical art trading cards by JennLarps.
-        Register the cards you received from me or another colector, view your collection, and transfer
-        ownership when you trade or gift a card.
-      </p>
+      <div class="register-content">
 
-      <div class="hero-buttons">
-        <a href="collection.html" class="button">
-          My Collection
+        <p class="eyebrow">WELCOME TO THE VAULT</p>
+
+        <h2>Register Your Card</h2>
+
+        <p class="register-description">
+          Enter the ID printed on your art trading card to add it
+          to your collection.
+        </p>
+
+        <form id="card-form">
+
+          <label for="card-id">
+            Card ID
+          </label>
+
+          <input
+            type="text"
+            id="card-id"
+            name="card-id"
+            placeholder="SW-XXXXXXXX"
+            autocomplete="off"
+            required
+          >
+
+          <button type="submit" class="primary-button">
+            Register Card
+          </button>
+
+        </form>
+
+        <div id="message"></div>
+
+      </div>
+
+      <div class="account-section">
+
+        <p>Already registered?</p>
+
+        <a href="login.html">
+          Sign in to your Vault
         </a>
 
-        <a href="#cards" class="button secondary">
-          View Cards
-        </a>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  </script>
+
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const form = document.getElementById("card-form");
+    const cardInput = document.getElementById("card-id");
+    const message = document.getElementById("message");
+
+    // Allows a QR code to provide the card ID:
+    // ?card=SW-01M1SL
+    const params = new URLSearchParams(window.location.search);
+    const qrCardId = params.get("card");
+
+    if (qrCardId) {
+      cardInput.value = qrCardId;
+    }
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const cardId = cardInput.value.trim().toUpperCase();
+
+      message.textContent = "Checking card...";
+
+      const { data: card, error } = await supabaseClient
+        .from("cards")
+        .select("id, name")
+        .eq("id", cardId)
+        .maybeSingle();
+
+      if (error) {
+        console.error(error);
+        message.textContent =
+          "Something went wrong. Please try again.";
+        return;
+      }
+
+      if (!card) {
+        message.textContent =
+          "We couldn't find a card with that ID.";
+        return;
+      }
+
+      /*
+        For now we only verify that the card exists.
+
+        Next we will connect this to login and actual
+        ownership registration.
+      */
+
+      message.innerHTML = `
+        <div class="card-found">
+          <span>Card found</span>
+          <strong>${card.name}</strong>
+          <small>${card.id}</small>
+        </div>
+      `;
+    });
+  </script>
+
+</body>
+</html>        </a>
       </div>
     </section>
 
