@@ -610,5 +610,25 @@ main {
   color: #f5f5f5;
   border: 1px solid #44444a;
 }
+
+  .vault-item {
+  margin-top: 12px;
+}
+
+.transfer-button {
+  width: 100%;
+}
+
+.transfer-code-box {
+  margin-bottom: 18px;
+}
+
+.transfer-code {
+  font-size: 1.5rem;
+  letter-spacing: 0.12em;
+  margin-top: 6px;
+}
+
+  
 }
 
