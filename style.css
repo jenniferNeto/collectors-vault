@@ -1,20 +1,170 @@
+/* =========================
+   BASE
+========================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #111111;
+  color: #f5f5f5;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+  text-align: center;
+  padding: 32px 20px;
+  border-bottom: 1px solid #333333;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2.2rem;
+}
+
+header p {
+  margin: 6px 0 0;
+  color: #999999;
+}
+
+
+/* =========================
+   MAIN LAYOUT
+========================= */
+
+main {
+  width: min(1100px, 90%);
+  margin: 0 auto;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+  text-align: center;
+  padding: 90px 20px;
+}
+
+.hero h2 {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  margin: 0 0 20px;
+}
+
+.hero p {
+  max-width: 650px;
+  margin: 0 auto 32px;
+  line-height: 1.7;
+  color: #bdbdbd;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.button {
+  display: inline-block;
+  padding: 12px 22px;
+  background: #f5f5f5;
+  color: #111111;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: 0.2s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button.secondary {
+  background: transparent;
+  color: #f5f5f5;
+  border: 1px solid #666666;
+}
+
+.button.secondary:hover {
+  border-color: #f5f5f5;
+}
+
+
+/* =========================
+   CARD ARCHIVE
+========================= */
+
+#cards {
+  padding: 40px 0 80px;
+}
+
+#cards > h2 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+#cards > p {
+  color: #aaaaaa;
+  margin-top: 0;
+}
+
+#card-list {
+  margin-top: 30px;
+}
+
+
+/* =========================
+   CARD GRID
+========================= */
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(
     auto-fit,
-    minmax(220px, 1fr)
+    minmax(190px, 1fr)
   );
   gap: 24px;
-  padding: 0;
-  border: none;
-  background: transparent;
 }
+
+
+/* =========================
+   INDIVIDUAL CARD
+========================= */
 
 .archive-card {
   background: #181818;
-  border: 1px solid #333;
+  border: 1px solid #333333;
   border-radius: 14px;
   overflow: hidden;
+  transition: 0.2s ease;
+}
+
+.archive-card:hover {
+  transform: translateY(-4px);
+  border-color: #555555;
 }
 
 .archive-card-image,
@@ -29,72 +179,78 @@
 }
 
 .archive-card-placeholder {
-  background: #222;
+  background: #222222;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #777;
+  color: #666666;
 }
 
 .archive-card-content {
-  padding: 20px;
+  padding: 18px;
 }
 
 .archive-card-content h3 {
-  margin-top: 6px;
-  margin-bottom: 12px;
+  margin: 6px 0 10px;
+  font-size: 1.15rem;
+}
+
+.archive-card-content p {
+  color: #bbbbbb;
 }
 
 .card-id {
-  color: #888;
-  font-size: 0.85rem;
+  color: #777777 !important;
+  font-size: 0.8rem;
   margin: 0;
+  letter-spacing: 0.05em;
 }
 
 .card-link {
   display: inline-block;
   margin-top: 10px;
   color: #f5f5f5;
-}
-.hero h2 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-}
-
-.hero p {
-  max-width: 650px;
-  margin: 0 auto 30px;
-  line-height: 1.6;
-  color: #c7c7c7;
-}
-
-.hero-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.button {
-  display: inline-block;
-  padding: 12px 22px;
-  background: #f5f5f5;
-  color: #111;
-  text-decoration: none;
-  border-radius: 8px;
   font-weight: bold;
+  text-decoration: none;
 }
 
-.button.secondary {
-  background: transparent;
-  color: #f5f5f5;
-  border: 1px solid #666;
+.card-link:hover {
+  text-decoration: underline;
 }
 
-#cards {
-  padding: 50px 0;
-}
 
-#card-list {
-  margin-top: 30px;
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+  main {
+    width: min(92%, 1100px);
+  }
+
+  header {
+    padding: 24px 16px;
+  }
+
+  header h1 {
+    font-size: 1.8rem;
+  }
+
+  .hero {
+    padding: 65px 10px;
+  }
+
+  .hero h2 {
+    font-size: 2.5rem;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(160px, 1fr)
+    );
+    gap: 16px;
+  }
+
 }
