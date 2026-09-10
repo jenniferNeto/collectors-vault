@@ -32,9 +32,7 @@
 
         <form id="login-form">
 
-          <label for="email">
-            Email
-          </label>
+          <label for="email">Email</label>
 
           <input
             type="email"
@@ -45,7 +43,7 @@
           >
 
           <button type="submit" id="login-button">
-            Send Secure Link
+            Secure My Vault
           </button>
 
         </form>
@@ -80,11 +78,13 @@
     const emailInput = document.getElementById("email");
 
     async function initializePage() {
+
       const {
         data: { user }
       } = await supabaseClient.auth.getUser();
 
       if (!user) {
+
         userStatus.innerHTML = `
           <div class="status-box">
             <small>No Vault found</small>
@@ -97,6 +97,7 @@
       }
 
       if (!user.is_anonymous) {
+
         userStatus.innerHTML = `
           <div class="status-box success-box">
             <small>Vault already secured</small>
@@ -113,13 +114,15 @@
           <small>Temporary Vault</small>
           <strong>Your collection is currently saved on this device.</strong>
           <span>
-            Add your email to secure this Vault.
+            Add an email to protect your collection and access it later.
           </span>
         </div>
       `;
     }
 
+
     form.addEventListener("submit", async function(event) {
+
       event.preventDefault();
 
       const email = emailInput.value.trim();
@@ -134,122 +137,209 @@
       } = await supabaseClient.auth.getUser();
 
       if (!user || !user.is_anonymous) {
+
         message.innerHTML = `
           <div class="status-box">
             <small>Unable to continue</small>
-            <strong>This Vault is not a temporary Vault.</strong>
+            <strong>This is not a temporary Vault.</strong>
           </div>
         `;
 
-        loginButton.disabled = false;
-        loginButton.textContent = "Send Secure Link";
+        resetButton();
         return;
       }
 
-      const { error } = await supabaseClient.auth.updateUser({
-        email: email
-      });
 
-      if (error) {
-        console.error(error);
+      /*
+       * First try attaching this email directly
+       * to the temporary Vault.
+       */
 
-        const msg = (error.message || "").toLowerCase();
+      const { error } =
+        await supabaseClient.auth.updateUser({
+          email: email
+        });
 
-        if (
-          msg.includes("already been registered") ||
-          msg.includes("already registered") ||
-          msg.includes("already exists")
-        ) {
-          message.innerHTML = `
-            <div class="status-box notice-box">
-              <small>Existing Vault found</small>
-              <strong>
-                This email is already connected to a Collector's Vault.
-              </strong>
-              <span>
-                Sign in to your existing Vault instead.
-              </span>
 
-              <button
-                type="button"
-                id="signin-existing"
-                class="secondary-button"
-              >
-                Sign In Instead
-              </button>
-            </div>
-          `;
-
-          document
-            .getElementById("signin-existing")
-            .addEventListener("click", async function() {
-
-              this.disabled = true;
-              this.textContent = "Sending Sign-In Link...";
-
-              const { error: signInError } =
-                await supabaseClient.auth.signInWithOtp({
-                  email: email,
-                  options: {
-                    emailRedirectTo:
-                      "https://collectors-vault.jennlarps.workers.dev/vault.html"
-                  }
-                });
-
-              if (signInError) {
-                console.error(signInError);
-
-                message.innerHTML = `
-                  <div class="status-box">
-                    <small>Unable to sign in</small>
-                    <strong>${signInError.message}</strong>
-                  </div>
-                `;
-
-                return;
-              }
-
-              message.innerHTML = `
-                <div class="status-box success-box">
-                  <small>Check your email</small>
-                  <strong>Sign-in link sent.</strong>
-                  <span>
-                    Open the link to access your existing Vault.
-                  </span>
-                </div>
-              `;
-            });
-
-          loginButton.disabled = false;
-          loginButton.textContent = "Send Secure Link";
-
-          return;
-        }
+      if (!error) {
 
         message.innerHTML = `
-          <div class="status-box">
-            <small>Unable to send link</small>
-            <strong>${error.message}</strong>
+          <div class="status-box success-box">
+            <small>Check your email</small>
+
+            <strong>
+              We sent a confirmation link to ${email}.
+            </strong>
+
+            <span>
+              Open the link to secure this Vault to your email.
+            </span>
           </div>
         `;
 
-        loginButton.disabled = false;
-        loginButton.textContent = "Send Secure Link";
+        form.style.display = "none";
         return;
       }
 
+
+      console.error(error);
+
+      const errorText =
+        (error.message || "").toLowerCase();
+
+
+      /*
+       * Email already belongs to another Vault.
+       */
+
+      if (
+        errorText.includes("already been registered") ||
+        errorText.includes("already registered") ||
+        errorText.includes("already exists")
+      ) {
+
+        message.innerHTML = `
+          <div class="status-box notice-box">
+
+            <small>Existing Vault found</small>
+
+            <strong>
+              This email already has a Collector's Vault.
+            </strong>
+
+            <span>
+              Sign in to your existing Vault and we'll add the
+              cards from this temporary Vault to it.
+            </span>
+
+            <button
+              type="button"
+              id="signin-existing"
+              class="secondary-button"
+            >
+              Sign In Instead
+            </button>
+
+          </div>
+        `;
+
+
+        document
+          .getElementById("signin-existing")
+          .addEventListener("click", async function() {
+
+            const button = this;
+
+            button.disabled = true;
+            button.textContent =
+              "Preparing Your Vault...";
+
+
+            /*
+             * Create a temporary one-time merge token.
+             */
+
+            const {
+              data: mergeToken,
+              error: tokenError
+            } =
+              await supabaseClient.rpc(
+                "create_vault_merge_token"
+              );
+
+
+            if (tokenError) {
+
+              console.error(tokenError);
+
+              message.innerHTML = `
+                <div class="status-box">
+                  <small>Unable to continue</small>
+                  <strong>${tokenError.message}</strong>
+                </div>
+              `;
+
+              return;
+            }
+
+
+            const returnUrl =
+              "https://collectors-vault.jennlarps.workers.dev/vault.html"
+              + "?merge_token="
+              + encodeURIComponent(mergeToken);
+
+
+            /*
+             * Send the existing account its sign-in link.
+             */
+
+            const { error: signInError } =
+              await supabaseClient.auth.signInWithOtp({
+                email: email,
+
+                options: {
+                  emailRedirectTo: returnUrl
+                }
+              });
+
+
+            if (signInError) {
+
+              console.error(signInError);
+
+              message.innerHTML = `
+                <div class="status-box">
+                  <small>Unable to sign in</small>
+                  <strong>${signInError.message}</strong>
+                </div>
+              `;
+
+              return;
+            }
+
+
+            message.innerHTML = `
+              <div class="status-box success-box">
+
+                <small>Check your email</small>
+
+                <strong>
+                  Sign-in link sent to ${email}.
+                </strong>
+
+                <span>
+                  Open the link and your temporary cards will
+                  automatically be added to your existing Vault.
+                </span>
+
+              </div>
+            `;
+
+            form.style.display = "none";
+          });
+
+
+        resetButton();
+        return;
+      }
+
+
       message.innerHTML = `
-        <div class="status-box success-box">
-          <small>Check your email</small>
-          <strong>We sent a confirmation link to ${email}.</strong>
-          <span>
-            Open that link to secure this Vault to your email.
-          </span>
+        <div class="status-box">
+          <small>Unable to secure Vault</small>
+          <strong>${error.message}</strong>
         </div>
       `;
 
-      form.style.display = "none";
+      resetButton();
     });
+
+
+    function resetButton() {
+      loginButton.disabled = false;
+      loginButton.textContent = "Secure My Vault";
+    }
+
 
     initializePage();
   </script>
