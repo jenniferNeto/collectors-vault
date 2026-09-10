@@ -22,19 +22,23 @@ body {
   padding: 24px;
 }
 
-.register-card {
+.panel {
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   background: #171719;
-  border: 1px solid #2c2c31;
+  border: 1px solid #303034;
   border-radius: 18px;
   overflow: hidden;
+}
+
+.vault-panel {
+  max-width: 560px;
 }
 
 .brand {
   text-align: center;
   padding: 28px 24px;
-  border-bottom: 1px solid #2c2c31;
+  border-bottom: 1px solid #303034;
 }
 
 .brand h1 {
@@ -44,7 +48,7 @@ body {
 
 .brand p {
   margin: 6px 0 0;
-  color: #8d8d94;
+  color: #929299;
   font-size: 0.9rem;
 }
 
@@ -54,9 +58,9 @@ body {
 
 .eyebrow {
   margin: 0 0 10px;
-  color: #8d8d94;
+  color: #929299;
   font-size: 0.72rem;
-  font-weight: bold;
+  font-weight: 700;
   letter-spacing: 0.14em;
 }
 
@@ -67,7 +71,7 @@ h2 {
 
 .description {
   margin: 12px 0 28px;
-  color: #aaaab0;
+  color: #b0afb5;
   line-height: 1.6;
 }
 
@@ -75,13 +79,13 @@ label {
   display: block;
   margin-bottom: 8px;
   font-size: 0.85rem;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 input {
   width: 100%;
   padding: 14px 15px;
-  border: 1px solid #38383d;
+  border: 1px solid #3a3a40;
   border-radius: 9px;
   background: #0f0f11;
   color: #ffffff;
@@ -95,6 +99,11 @@ input:focus {
 }
 
 button {
+  font: inherit;
+  cursor: pointer;
+}
+
+#register-button {
   width: 100%;
   margin-top: 12px;
   padding: 14px;
@@ -102,72 +111,177 @@ button {
   border-radius: 9px;
   background: #f3f3f3;
   color: #111111;
-  font: inherit;
-  font-weight: bold;
-  cursor: pointer;
+  font-weight: 700;
 }
 
-button:hover {
+#register-button:hover {
   background: #ffffff;
 }
 
-#message {
+#register-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+#message,
+#user-status,
+#transfer-message {
   margin-top: 18px;
 }
 
-.card-found {
+.status-box {
   display: flex;
   flex-direction: column;
-  padding: 14px 16px;
+  gap: 5px;
+  margin-top: 12px;
+  padding: 16px;
   background: #202024;
-  border: 1px solid #34343a;
-  border-radius: 9px;
+  border: 1px solid #37373d;
+  border-radius: 10px;
 }
 
-.card-found small {
-  color: #8d8d94;
+.status-box small {
+  color: #929299;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font-weight: 700;
 }
 
-.card-found strong {
-  margin-top: 4px;
+.status-box strong {
+  font-size: 1rem;
 }
 
-.card-found span {
-  margin-top: 2px;
-  color: #8d8d94;
-  font-size: 0.85rem;
-}
-
-.signin {
-  margin-top: 28px;
-  padding-top: 22px;
-  border-top: 1px solid #2c2c31;
-  text-align: center;
+.status-box span {
+  color: #aaaab0;
   font-size: 0.88rem;
-  color: #8d8d94;
+  line-height: 1.45;
 }
 
-.signin a {
-  margin-left: 5px;
-  color: #f5f5f5;
-  font-weight: bold;
+.success-box {
+  border-color: #4b4b52;
+}
+
+.notice-box {
+  background: #1c1c20;
+}
+
+.primary-link,
+.secondary-link {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  border-radius: 9px;
+  text-align: center;
   text-decoration: none;
+  font-weight: 700;
 }
 
-.signin a:hover {
+.primary-link {
+  margin-top: 14px;
+  background: #f3f3f3;
+  color: #111111;
+}
+
+.primary-link:hover {
+  background: #ffffff;
+}
+
+.secondary-link {
+  border: 1px solid #3a3a40;
+  color: #f5f5f5;
+}
+
+.secondary-link:hover {
+  background: #202024;
+  border-color: #65656d;
+}
+
+.secondary-button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid #3a3a40;
+  border-radius: 9px;
+  background: transparent;
+  color: #f5f5f5;
+  font-weight: 700;
+}
+
+.secondary-button:hover {
+  background: #202024;
+  border-color: #65656d;
+}
+
+.page-links {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.text-link {
+  color: #f5f5f5;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.text-link:hover {
   text-decoration: underline;
 }
 
-@media (max-width: 540px) {
+.vault-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.vault-item {
+  margin-top: 14px;
+  padding: 16px;
+  background: #202024;
+  border: 1px solid #37373d;
+  border-radius: 10px;
+}
+
+.vault-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vault-card-info small {
+  color: #929299;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.vault-card-info strong {
+  font-size: 1.05rem;
+}
+
+.vault-card-info span {
+  color: #aaaab0;
+  font-size: 0.85rem;
+}
+
+.transfer-code-box {
+  margin-bottom: 18px;
+}
+
+.transfer-code {
+  margin: 5px 0;
+  font-size: 1.6rem !important;
+  letter-spacing: 0.15em;
+}
+
+@media (max-width: 560px) {
+
   .page {
     align-items: flex-start;
     padding: 16px;
   }
 
-  .register-card {
-    margin-top: 24px;
+  .panel {
+    margin-top: 20px;
   }
 
   .content {
@@ -177,458 +291,5 @@ button:hover {
   h2 {
     font-size: 1.9rem;
   }
-}}
 
-.brand {
-  text-align: center;
-
-  padding: 30px 25px;
-
-  border-bottom: 1px solid #303034;
 }
-
-.brand h1 {
-  margin: 0;
-
-  font-size: 2rem;
-}
-
-.brand p {
-  margin: 5px 0 0;
-
-  color: #8e8e93;
-  font-size: 0.9rem;
-}
-
-.register-content {
-  padding: 45px 40px;
-}
-
-.eyebrow {
-  margin: 0 0 10px;
-
-  color: #8e8e93;
-
-  font-size: 0.72rem;
-  font-weight: bold;
-
-  letter-spacing: 0.15em;
-}
-
-.register-content h2 {
-  margin: 0;
-
-  font-size: 2.3rem;
-}
-
-.register-description {
-  margin: 12px 0 30px;
-
-  color: #aaa9ae;
-
-  line-height: 1.6;
-}
-
-label {
-  display: block;
-
-  margin-bottom: 8px;
-
-  font-size: 0.85rem;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-
-  padding: 15px 16px;
-
-  background: #0f0f10;
-  color: #ffffff;
-
-  border: 1px solid #3a3a3e;
-  border-radius: 9px;
-
-  font: inherit;
-
-  outline: none;
-
-  text-transform: uppercase;
-}
-
-input:focus {
-  border-color: #8d8d94;
-}
-
-.primary-button {
-  width: 100%;
-
-  margin-top: 14px;
-  padding: 15px;
-
-  border: none;
-  border-radius: 9px;
-
-  background: #f2f2f2;
-  color: #111111;
-
-  font-size: 0.95rem;
-  font-weight: bold;
-
-  cursor: pointer;
-}
-
-.primary-button:hover {
-  background: #ffffff;
-}
-
-#message {
-  margin-top: 20px;
-}
-
-.card-found {
-  display: flex;
-  flex-direction: column;
-
-  padding: 16px;
-
-  background: #202023;
-
-  border: 1px solid #36363a;
-  border-radius: 9px;
-}
-
-.card-found span {
-  margin-bottom: 5px;
-
-  color: #8e8e93;
-
-  font-size: 0.7rem;
-  font-weight: bold;
-
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.card-found strong {
-  font-size: 1.1rem;
-}
-
-.card-found small {
-  margin-top: 3px;
-
-  color: #8e8e93;
-}
-
-.account-section {
-  text-align: center;
-
-  padding: 22px;
-
-  background: #121214;
-
-  border-top: 1px solid #303034;
-}
-
-.account-section p {
-  display: inline;
-
-  margin: 0;
-
-  color: #88888d;
-
-  font-size: 0.85rem;
-}
-
-.account-section a {
-  margin-left: 5px;
-
-  color: #eeeeee;
-
-  font-size: 0.85rem;
-  font-weight: bold;
-
-  text-decoration: none;
-}
-
-.account-section a:hover {
-  text-decoration: underline;
-}
-
-@media (max-width: 550px) {
-
-  .register-page {
-    padding: 18px;
-  }
-
-  .register-content {
-    padding: 35px 25px;
-  }
-
-  .register-content h2 {
-    font-size: 2rem;
-  }
-
-}  margin: 0;
-  font-size: 2.2rem;
-}
-
-header p {
-  margin: 6px 0 0;
-  color: #999999;
-}
-
-
-/* =========================
-   MAIN LAYOUT
-========================= */
-
-main {
-  width: min(1100px, 90%);
-  margin: 0 auto;
-}
-
-
-/* =========================
-   HERO
-========================= */
-
-.hero {
-  text-align: center;
-  padding: 90px 20px;
-}
-
-.hero h2 {
-  font-size: clamp(2.4rem, 6vw, 4rem);
-  margin: 0 0 20px;
-}
-
-.hero p {
-  max-width: 650px;
-  margin: 0 auto 32px;
-  line-height: 1.7;
-  color: #bdbdbd;
-}
-
-.hero-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-
-/* =========================
-   BUTTONS
-========================= */
-
-.button {
-  display: inline-block;
-  padding: 12px 22px;
-  background: #f5f5f5;
-  color: #111111;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: bold;
-  transition: 0.2s ease;
-}
-
-.button:hover {
-  transform: translateY(-2px);
-}
-
-.button.secondary {
-  background: transparent;
-  color: #f5f5f5;
-  border: 1px solid #666666;
-}
-
-.button.secondary:hover {
-  border-color: #f5f5f5;
-}
-
-
-/* =========================
-   CARD ARCHIVE
-========================= */
-
-#cards {
-  padding: 40px 0 80px;
-}
-
-#cards > h2 {
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-
-#cards > p {
-  color: #aaaaaa;
-  margin-top: 0;
-}
-
-#card-list {
-  margin-top: 30px;
-}
-
-
-/* =========================
-   CARD GRID
-========================= */
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(190px, 1fr)
-  );
-  gap: 24px;
-}
-
-
-/* =========================
-   INDIVIDUAL CARD
-========================= */
-
-.archive-card {
-  background: #181818;
-  border: 1px solid #333333;
-  border-radius: 14px;
-  overflow: hidden;
-  transition: 0.2s ease;
-}
-
-.archive-card:hover {
-  transform: translateY(-4px);
-  border-color: #555555;
-}
-
-.archive-card-image,
-.archive-card-placeholder {
-  width: 100%;
-  aspect-ratio: 2.5 / 3.5;
-}
-
-.archive-card-image {
-  object-fit: cover;
-  display: block;
-}
-
-.archive-card-placeholder {
-  background: #222222;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666666;
-}
-
-.archive-card-content {
-  padding: 18px;
-}
-
-.archive-card-content h3 {
-  margin: 6px 0 10px;
-  font-size: 1.15rem;
-}
-
-.archive-card-content p {
-  color: #bbbbbb;
-}
-
-.card-id {
-  color: #777777 !important;
-  font-size: 0.8rem;
-  margin: 0;
-  letter-spacing: 0.05em;
-}
-
-.card-link {
-  display: inline-block;
-  margin-top: 10px;
-  color: #f5f5f5;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.card-link:hover {
-  text-decoration: underline;
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 600px) {
-
-  main {
-    width: min(92%, 1100px);
-  }
-
-  header {
-    padding: 24px 16px;
-  }
-
-  header h1 {
-    font-size: 1.8rem;
-  }
-
-  .hero {
-    padding: 65px 10px;
-  }
-
-  .hero h2 {
-    font-size: 2.5rem;
-  }
-
-  .card-grid {
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(160px, 1fr)
-    );
-    gap: 16px;
-  }
-
-  .register-link {
-  display: block;
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 8px;
-  background: #f3f3f3;
-  color: #111111;
-  text-align: center;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.register-link:hover {
-  background: #ffffff;
-}
-
-.secondary-action {
-  margin-top: 14px;
-  background: transparent;
-  color: #f5f5f5;
-  border: 1px solid #44444a;
-}
-
-  .vault-item {
-  margin-top: 12px;
-}
-
-.transfer-button {
-  width: 100%;
-}
-
-.transfer-code-box {
-  margin-bottom: 18px;
-}
-
-.transfer-code {
-  font-size: 1.5rem;
-  letter-spacing: 0.12em;
-  margin-top: 6px;
-}
-
-  
-}
-
