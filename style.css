@@ -93,6 +93,10 @@ input {
   text-transform: uppercase;
 }
 
+input::placeholder {
+  color: #74747b;
+}
+
 input:focus {
   outline: none;
   border-color: #777780;
@@ -103,7 +107,8 @@ button {
   cursor: pointer;
 }
 
-#register-button {
+#register-button,
+#receive-button {
   width: 100%;
   margin-top: 12px;
   padding: 14px;
@@ -114,11 +119,13 @@ button {
   font-weight: 700;
 }
 
-#register-button:hover {
+#register-button:hover,
+#receive-button:hover {
   background: #ffffff;
 }
 
-#register-button:disabled {
+#register-button:disabled,
+#receive-button:disabled {
   opacity: 0.6;
   cursor: wait;
 }
@@ -263,6 +270,10 @@ button {
   font-size: 0.85rem;
 }
 
+.transfer-button {
+  margin-top: 14px;
+}
+
 .transfer-code-box {
   margin-bottom: 18px;
 }
@@ -274,7 +285,6 @@ button {
 }
 
 @media (max-width: 560px) {
-
   .page {
     align-items: flex-start;
     padding: 16px;
@@ -291,5 +301,4 @@ button {
   h2 {
     font-size: 1.9rem;
   }
-
 }
