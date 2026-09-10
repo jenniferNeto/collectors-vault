@@ -11,7 +11,7 @@
 
   <main class="page">
 
-    <section class="register-card">
+    <section class="panel vault-panel">
 
       <div class="brand">
         <h1>Collector's Vault</h1>
@@ -25,7 +25,7 @@
         <h2>Your Collection</h2>
 
         <p class="description">
-          Cards registered to your account will appear here.
+          Cards registered to this Vault appear here.
         </p>
 
         <div id="user-status"></div>
@@ -34,16 +34,33 @@
 
         <div id="vault-list"></div>
 
-        <a href="receive.html" class="register-link">
-          Receive a Card
-        </a>
+        <div class="vault-actions">
 
-        <button id="signout-button" style="display:none;">
-          Sign Out
-        </button>
+          <a href="/" class="secondary-link">
+            Register Another Card
+          </a>
 
-        <div class="signin">
-          <a href="/">← Register another card</a>
+          <a href="receive.html" class="secondary-link">
+            Receive a Card
+          </a>
+
+          <a
+            href="login.html"
+            id="secure-vault-link"
+            class="primary-link"
+            style="display:none;"
+          >
+            Secure My Vault
+          </a>
+
+          <button
+            id="signout-button"
+            class="secondary-button"
+            style="display:none;"
+          >
+            Sign Out
+          </button>
+
         </div>
 
       </div>
@@ -65,59 +82,78 @@
     const vaultList = document.getElementById("vault-list");
     const transferMessage = document.getElementById("transfer-message");
     const signoutButton = document.getElementById("signout-button");
+    const secureVaultLink = document.getElementById("secure-vault-link");
 
     async function loadVault() {
-
       const {
         data: { user }
       } = await supabaseClient.auth.getUser();
 
       if (!user) {
         userStatus.innerHTML = `
-          <div class="card-found">
-            <small>Not signed in</small>
-            <strong>Please sign in to view your Vault.</strong>
+          <div class="status-box">
+            <small>No Vault found</small>
+            <strong>Register a card to create your Vault.</strong>
           </div>
         `;
 
         vaultList.innerHTML = `
-          <div class="signin">
-            <a href="login.html">Sign in</a>
-          </div>
+          <a href="/" class="primary-link">
+            Register a Card
+          </a>
         `;
 
         return;
       }
 
-      userStatus.innerHTML = `
-        <div class="card-found">
-          <small>Signed in as</small>
-          <strong>${user.email}</strong>
-        </div>
-      `;
+      const isAnonymous = user.is_anonymous === true;
 
-      signoutButton.style.display = "block";
+      if (isAnonymous) {
+        userStatus.innerHTML = `
+          <div class="status-box notice-box">
+            <small>Temporary Vault</small>
+            <strong>Your collection is saved on this device.</strong>
+            <span>
+              Secure your Vault with an email so you can recover it on another device.
+            </span>
+          </div>
+        `;
 
-      const { data: ownerships, error } = await supabaseClient
-        .from("ownerships")
-        .select(`
-          id,
-          registered_at,
-          card_id,
-          cards (
+        secureVaultLink.style.display = "block";
+      } else {
+        userStatus.innerHTML = `
+          <div class="status-box success-box">
+            <small>Vault secured</small>
+            <strong>${user.email}</strong>
+          </div>
+        `;
+
+        signoutButton.style.display = "block";
+      }
+
+      const { data: ownerships, error } =
+        await supabaseClient
+          .from("ownerships")
+          .select(`
             id,
-            name
-          )
-        `)
-        .eq("owner_id", user.id)
-        .eq("active", true)
-        .order("registered_at", { ascending: false });
+            registered_at,
+            card_id,
+            cards (
+              id,
+              name
+            )
+          `)
+          .eq("owner_id", user.id)
+          .eq("active", true)
+          .order("registered_at", { ascending: false });
 
       if (error) {
         console.error(error);
 
         vaultList.innerHTML = `
-          <p>We couldn't load your collection.</p>
+          <div class="status-box">
+            <strong>We couldn't load your collection.</strong>
+          </div>
         `;
 
         return;
@@ -125,7 +161,7 @@
 
       if (!ownerships || ownerships.length === 0) {
         vaultList.innerHTML = `
-          <div class="card-found">
+          <div class="status-box">
             <small>Your Vault is empty</small>
             <strong>No cards registered yet.</strong>
           </div>
@@ -135,21 +171,29 @@
       }
 
       vaultList.innerHTML = ownerships.map(record => `
-        <div class="card-found vault-item">
-          <small>${record.card_id}</small>
-          <strong>${record.cards?.name || "Unnamed Card"}</strong>
+        <div class="vault-item">
 
-          <span>
-            Registered ${new Date(record.registered_at).toLocaleDateString()}
-          </span>
+          <div class="vault-card-info">
+            <small>${record.card_id}</small>
+
+            <strong>
+              ${record.cards?.name || "Unnamed Card"}
+            </strong>
+
+            <span>
+              Registered
+              ${new Date(record.registered_at).toLocaleDateString()}
+            </span>
+          </div>
 
           <button
-            class="secondary-action transfer-button"
+            class="secondary-button transfer-button"
             data-ownership-id="${record.id}"
             type="button"
           >
             Transfer Card
           </button>
+
         </div>
       `).join("");
 
@@ -158,9 +202,7 @@
         .forEach(button => {
 
           button.addEventListener("click", async function() {
-
-            const ownershipId =
-              this.dataset.ownershipId;
+            const ownershipId = this.dataset.ownershipId;
 
             transferMessage.textContent =
               "Creating transfer code...";
@@ -176,14 +218,18 @@
             if (error) {
               console.error(error);
 
-              transferMessage.textContent =
-                "We couldn't create the transfer code.";
+              transferMessage.innerHTML = `
+                <div class="status-box">
+                  <small>Transfer error</small>
+                  <strong>${error.message}</strong>
+                </div>
+              `;
 
               return;
             }
 
             transferMessage.innerHTML = `
-              <div class="card-found transfer-code-box">
+              <div class="status-box success-box transfer-code-box">
                 <small>Transfer code</small>
 
                 <strong class="transfer-code">
@@ -196,133 +242,18 @@
                 </span>
               </div>
             `;
-
-            transferMessage.scrollIntoView({
-              behavior: "smooth"
-            });
-
           });
 
         });
     }
 
-    signoutButton.addEventListener("click", async function() {
-      await supabaseClient.auth.signOut();
-      window.location.href = "/";
-    });
-
-    loadVault();
-  </script>
-
-</body>
-</html>        </button>
-
-        <div class="signin">
-          <a href="/">← Register another card</a>
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-
-  <script>
-    const supabaseClient = supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
+    signoutButton.addEventListener(
+      "click",
+      async function() {
+        await supabaseClient.auth.signOut();
+        window.location.href = "/";
+      }
     );
-
-    const userStatus = document.getElementById("user-status");
-    const vaultList = document.getElementById("vault-list");
-    const signoutButton = document.getElementById("signout-button");
-
-    async function loadVault() {
-
-      const {
-        data: { user }
-      } = await supabaseClient.auth.getUser();
-
-      if (!user) {
-        userStatus.innerHTML = `
-          <div class="card-found">
-            <small>Not signed in</small>
-            <strong>Please sign in to view your Vault.</strong>
-          </div>
-        `;
-
-        vaultList.innerHTML = `
-          <div class="signin">
-            <a href="login.html">Sign in</a>
-          </div>
-        `;
-
-        return;
-      }
-
-      userStatus.innerHTML = `
-        <div class="card-found">
-          <small>Signed in as</small>
-          <strong>${user.email}</strong>
-        </div>
-      `;
-
-      signoutButton.style.display = "block";
-
-      const { data: ownerships, error } = await supabaseClient
-        .from("ownerships")
-        .select(`
-          id,
-          registered_at,
-          card_id,
-          cards (
-            id,
-            name
-          )
-        `)
-        .eq("owner_id", user.id)
-        .eq("active", true)
-        .order("registered_at", { ascending: false });
-
-      if (error) {
-        console.error(error);
-
-        vaultList.innerHTML = `
-          <p>We couldn't load your collection.</p>
-        `;
-
-        return;
-      }
-
-      if (!ownerships || ownerships.length === 0) {
-        vaultList.innerHTML = `
-          <div class="card-found">
-            <small>Your Vault is empty</small>
-            <strong>No cards registered yet.</strong>
-          </div>
-        `;
-
-        return;
-      }
-
-      vaultList.innerHTML = ownerships.map(record => `
-        <div class="card-found" style="margin-top:12px;">
-          <small>${record.card_id}</small>
-          <strong>${record.cards?.name || "Unnamed Card"}</strong>
-          <span>
-            Registered ${new Date(record.registered_at).toLocaleDateString()}
-          </span>
-        </div>
-      `).join("");
-    }
-
-    signoutButton.addEventListener("click", async function() {
-      await supabaseClient.auth.signOut();
-      window.location.href = "/";
-    });
 
     loadVault();
   </script>
