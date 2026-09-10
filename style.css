@@ -108,7 +108,8 @@ button {
 }
 
 #register-button,
-#receive-button {
+#receive-button,
+#login-button {
   width: 100%;
   margin-top: 12px;
   padding: 14px;
@@ -120,12 +121,14 @@ button {
 }
 
 #register-button:hover,
-#receive-button:hover {
+#receive-button:hover,
+#login-button:hover {
   background: #ffffff;
 }
 
 #register-button:disabled,
-#receive-button:disabled {
+#receive-button:disabled,
+#login-button:disabled {
   opacity: 0.6;
   cursor: wait;
 }
