@@ -45,12 +45,106 @@
         Browse the current card collection.
       </p>
 
-      <div id="card-list">
-        <p>Cards will appear here soon.</p>
+     <div id="card-list" class="card-grid">
+        <p>Loading cards...</p>
       </div>
     </section>
 
   </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    async function loadCards() {
+      const cardList = document.getElementById("card-list");
+
+      const { data: cards, error } = await supabaseClient
+        .from("cards")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error(error);
+
+        cardList.innerHTML = `
+          <p>
+            There was a problem loading the card archive.
+          </p>
+        `;
+
+        return;
+      }
+
+      if (!cards || cards.length === 0) {
+        cardList.innerHTML = `
+          <p>No cards have been added yet.</p>
+        `;
+
+        return;
+      }
+
+      cardList.innerHTML = "";
+
+      cards.forEach(card => {
+        const cardElement = document.createElement("article");
+
+        cardElement.className = "archive-card";
+
+        cardElement.innerHTML = `
+          ${
+            card.image_url
+              ? `
+                <img
+                  src="${card.image_url}"
+                  alt="${card.name}"
+                  class="archive-card-image"
+                >
+              `
+              : `
+                <div class="archive-card-placeholder">
+                  Card Image
+                </div>
+              `
+          }
+
+          <div class="archive-card-content">
+
+            <p class="card-id">
+              ${card.id}
+            </p>
+
+            <h3>
+              ${card.name}
+            </h3>
+
+            ${
+              card.description
+                ? `<p>${card.description}</p>`
+                : ""
+            }
+
+            <a
+              href="card.html?id=${encodeURIComponent(card.id)}"
+              class="card-link"
+            >
+              View Card
+            </a>
+
+          </div>
+        `;
+
+        cardList.appendChild(cardElement);
+      });
+    }
+
+    loadCards();
+  </script>
 
 </body>
 </html>
