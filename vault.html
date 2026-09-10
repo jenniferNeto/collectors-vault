@@ -30,11 +30,192 @@
 
         <div id="user-status"></div>
 
+        <div id="transfer-message"></div>
+
         <div id="vault-list"></div>
+
+        <a href="receive.html" class="register-link">
+          Receive a Card
+        </a>
 
         <button id="signout-button" style="display:none;">
           Sign Out
         </button>
+
+        <div class="signin">
+          <a href="/">← Register another card</a>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const userStatus = document.getElementById("user-status");
+    const vaultList = document.getElementById("vault-list");
+    const transferMessage = document.getElementById("transfer-message");
+    const signoutButton = document.getElementById("signout-button");
+
+    async function loadVault() {
+
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+      if (!user) {
+        userStatus.innerHTML = `
+          <div class="card-found">
+            <small>Not signed in</small>
+            <strong>Please sign in to view your Vault.</strong>
+          </div>
+        `;
+
+        vaultList.innerHTML = `
+          <div class="signin">
+            <a href="login.html">Sign in</a>
+          </div>
+        `;
+
+        return;
+      }
+
+      userStatus.innerHTML = `
+        <div class="card-found">
+          <small>Signed in as</small>
+          <strong>${user.email}</strong>
+        </div>
+      `;
+
+      signoutButton.style.display = "block";
+
+      const { data: ownerships, error } = await supabaseClient
+        .from("ownerships")
+        .select(`
+          id,
+          registered_at,
+          card_id,
+          cards (
+            id,
+            name
+          )
+        `)
+        .eq("owner_id", user.id)
+        .eq("active", true)
+        .order("registered_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+
+        vaultList.innerHTML = `
+          <p>We couldn't load your collection.</p>
+        `;
+
+        return;
+      }
+
+      if (!ownerships || ownerships.length === 0) {
+        vaultList.innerHTML = `
+          <div class="card-found">
+            <small>Your Vault is empty</small>
+            <strong>No cards registered yet.</strong>
+          </div>
+        `;
+
+        return;
+      }
+
+      vaultList.innerHTML = ownerships.map(record => `
+        <div class="card-found vault-item">
+          <small>${record.card_id}</small>
+          <strong>${record.cards?.name || "Unnamed Card"}</strong>
+
+          <span>
+            Registered ${new Date(record.registered_at).toLocaleDateString()}
+          </span>
+
+          <button
+            class="secondary-action transfer-button"
+            data-ownership-id="${record.id}"
+            type="button"
+          >
+            Transfer Card
+          </button>
+        </div>
+      `).join("");
+
+      document
+        .querySelectorAll(".transfer-button")
+        .forEach(button => {
+
+          button.addEventListener("click", async function() {
+
+            const ownershipId =
+              this.dataset.ownershipId;
+
+            transferMessage.textContent =
+              "Creating transfer code...";
+
+            const { data: code, error } =
+              await supabaseClient.rpc(
+                "create_transfer",
+                {
+                  p_ownership_id: ownershipId
+                }
+              );
+
+            if (error) {
+              console.error(error);
+
+              transferMessage.textContent =
+                "We couldn't create the transfer code.";
+
+              return;
+            }
+
+            transferMessage.innerHTML = `
+              <div class="card-found transfer-code-box">
+                <small>Transfer code</small>
+
+                <strong class="transfer-code">
+                  ${code}
+                </strong>
+
+                <span>
+                  Give this code to the person receiving the card.
+                  It expires in 7 days.
+                </span>
+              </div>
+            `;
+
+            transferMessage.scrollIntoView({
+              behavior: "smooth"
+            });
+
+          });
+
+        });
+    }
+
+    signoutButton.addEventListener("click", async function() {
+      await supabaseClient.auth.signOut();
+      window.location.href = "/";
+    });
+
+    loadVault();
+  </script>
+
+</body>
+</html>        </button>
 
         <div class="signin">
           <a href="/">← Register another card</a>
