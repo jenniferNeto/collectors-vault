@@ -40,6 +40,7 @@
             type="text"
             id="transfer-code"
             placeholder="XXXXXXXX"
+            maxlength="8"
             autocomplete="off"
             required
           >
@@ -106,7 +107,9 @@
           userStatus.innerHTML = `
             <div class="status-box notice-box">
               <small>Temporary Vault</small>
-              <strong>This card will be added to this device's Vault.</strong>
+              <strong>
+                This card will be added to this device's Vault.
+              </strong>
               <span>
                 You can secure your Vault with an email later.
               </span>
@@ -120,13 +123,16 @@
             </div>
           `;
         }
+
       } catch (error) {
         console.error(error);
 
         userStatus.innerHTML = `
           <div class="status-box">
             <small>Vault error</small>
-            <strong>We couldn't create your Vault.</strong>
+            <strong>
+              We couldn't create your Vault.
+            </strong>
           </div>
         `;
 
@@ -137,10 +143,27 @@
     form.addEventListener("submit", async function(event) {
       event.preventDefault();
 
-      const code = codeInput.value.trim().toUpperCase();
+      const code = codeInput.value
+        .trim()
+        .toUpperCase();
+
+      if (code.length !== 8) {
+        message.innerHTML = `
+          <div class="status-box">
+            <small>Invalid code</small>
+            <strong>
+              Transfer codes contain 8 characters.
+            </strong>
+          </div>
+        `;
+
+        return;
+      }
 
       receiveButton.disabled = true;
-      message.textContent = "Accepting transfer...";
+      receiveButton.textContent = "Accepting Transfer...";
+
+      message.innerHTML = "";
 
       const { data, error } =
         await supabaseClient.rpc(
@@ -161,173 +184,34 @@
         `;
 
         receiveButton.disabled = false;
+        receiveButton.textContent = "Accept Transfer";
+
         return;
       }
+
+      form.style.display = "none";
+      userStatus.style.display = "none";
 
       message.innerHTML = `
         <div class="status-box success-box">
           <small>Transfer complete</small>
-          <strong>The card is now in your Vault.</strong>
+
+          <strong>
+            The card is now in your Vault.
+          </strong>
+
+          <span>
+            Ownership of this physical card has been transferred to you.
+          </span>
 
           <a href="vault.html" class="primary-link">
             View My Vault
           </a>
         </div>
       `;
-
-      form.style.display = "none";
     });
 
     initializePage();
-  </script>
-
-</body>
-</html>          </label>
-
-          <input
-            type="text"
-            id="transfer-code"
-            placeholder="XXXXXXXX"
-            autocomplete="off"
-            required
-          >
-
-          <button type="submit">
-            Accept Transfer
-          </button>
-
-        </form>
-
-        <div id="message"></div>
-
-        <div class="signin">
-          <a href="vault.html">← Back to My Vault</a>
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-
-  <script>
-
-    const supabaseClient = supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
-    const userStatus =
-      document.getElementById("user-status");
-
-    const receiveForm =
-      document.getElementById("receive-form");
-
-    const message =
-      document.getElementById("message");
-
-    async function initializePage() {
-
-      const {
-        data: { user }
-      } = await supabaseClient.auth.getUser();
-
-      if (!user) {
-
-        userStatus.innerHTML = `
-          <div class="card-found">
-            <small>Sign in required</small>
-            <strong>
-              You need to sign in before receiving a card.
-            </strong>
-
-            <a
-              href="login.html"
-              class="register-link"
-            >
-              Sign In
-            </a>
-          </div>
-        `;
-
-        return;
-      }
-
-      userStatus.innerHTML = `
-        <div class="card-found">
-          <small>Receiving as</small>
-          <strong>${user.email}</strong>
-        </div>
-      `;
-
-      receiveForm.style.display = "block";
-    }
-
-    receiveForm.addEventListener(
-      "submit",
-      async function(event) {
-
-        event.preventDefault();
-
-        const code = document
-          .getElementById("transfer-code")
-          .value
-          .trim()
-          .toUpperCase();
-
-        message.textContent =
-          "Accepting transfer...";
-
-        const { data, error } =
-          await supabaseClient.rpc(
-            "accept_transfer",
-            {
-              p_code: code
-            }
-          );
-
-        if (error) {
-
-          console.error(error);
-
-          message.innerHTML = `
-            <div class="card-found">
-              <small>Transfer failed</small>
-              <strong>
-                ${error.message}
-              </strong>
-            </div>
-          `;
-
-          return;
-        }
-
-        message.innerHTML = `
-          <div class="card-found">
-            <small>Transfer complete</small>
-
-            <strong>
-              The card has been added to your Vault.
-            </strong>
-
-            <a
-              href="vault.html"
-              class="register-link"
-            >
-              View My Vault
-            </a>
-          </div>
-        `;
-
-        receiveForm.style.display = "none";
-      }
-    );
-
-    initializePage();
-
   </script>
 
 </body>
