@@ -11,7 +11,7 @@
 
   <main class="page">
 
-    <section class="register-card">
+    <section class="panel">
 
       <div class="brand">
         <h1>Collector's Vault</h1>
@@ -30,11 +30,159 @@
 
         <div id="user-status"></div>
 
-        <form id="receive-form" style="display:none;">
+        <form id="receive-form">
 
           <label for="transfer-code">
             Transfer Code
           </label>
+
+          <input
+            type="text"
+            id="transfer-code"
+            placeholder="XXXXXXXX"
+            autocomplete="off"
+            required
+          >
+
+          <button type="submit" id="receive-button">
+            Accept Transfer
+          </button>
+
+        </form>
+
+        <div id="message"></div>
+
+        <div class="page-links">
+          <a href="vault.html" class="text-link">
+            ← Back to My Vault
+          </a>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const userStatus = document.getElementById("user-status");
+    const form = document.getElementById("receive-form");
+    const message = document.getElementById("message");
+    const receiveButton = document.getElementById("receive-button");
+    const codeInput = document.getElementById("transfer-code");
+
+    async function getOrCreateUser() {
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+      if (user) {
+        return user;
+      }
+
+      const { data, error } =
+        await supabaseClient.auth.signInAnonymously();
+
+      if (error) {
+        throw error;
+      }
+
+      return data.user;
+    }
+
+    async function initializePage() {
+      try {
+        const user = await getOrCreateUser();
+
+        if (user.is_anonymous) {
+          userStatus.innerHTML = `
+            <div class="status-box notice-box">
+              <small>Temporary Vault</small>
+              <strong>This card will be added to this device's Vault.</strong>
+              <span>
+                You can secure your Vault with an email later.
+              </span>
+            </div>
+          `;
+        } else {
+          userStatus.innerHTML = `
+            <div class="status-box success-box">
+              <small>Receiving as</small>
+              <strong>${user.email}</strong>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error(error);
+
+        userStatus.innerHTML = `
+          <div class="status-box">
+            <small>Vault error</small>
+            <strong>We couldn't create your Vault.</strong>
+          </div>
+        `;
+
+        form.style.display = "none";
+      }
+    }
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const code = codeInput.value.trim().toUpperCase();
+
+      receiveButton.disabled = true;
+      message.textContent = "Accepting transfer...";
+
+      const { data, error } =
+        await supabaseClient.rpc(
+          "accept_transfer",
+          {
+            p_code: code
+          }
+        );
+
+      if (error) {
+        console.error(error);
+
+        message.innerHTML = `
+          <div class="status-box">
+            <small>Transfer failed</small>
+            <strong>${error.message}</strong>
+          </div>
+        `;
+
+        receiveButton.disabled = false;
+        return;
+      }
+
+      message.innerHTML = `
+        <div class="status-box success-box">
+          <small>Transfer complete</small>
+          <strong>The card is now in your Vault.</strong>
+
+          <a href="vault.html" class="primary-link">
+            View My Vault
+          </a>
+        </div>
+      `;
+
+      form.style.display = "none";
+    });
+
+    initializePage();
+  </script>
+
+</body>
+</html>          </label>
 
           <input
             type="text"
