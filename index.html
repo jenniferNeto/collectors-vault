@@ -59,59 +59,158 @@
 
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 
-  <script>
-    const supabaseClient = supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+<script>
+  const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-    const form = document.getElementById("card-form");
-    const input = document.getElementById("card-id");
-    const message = document.getElementById("message");
+  const form = document.getElementById("card-form");
+  const input = document.getElementById("card-id");
+  const message = document.getElementById("message");
 
-    const params = new URLSearchParams(window.location.search);
-    const cardFromQR = params.get("card");
+  const params = new URLSearchParams(window.location.search);
+  const cardFromQR = params.get("card");
 
-    if (cardFromQR) {
-      input.value = cardFromQR.toUpperCase();
+  if (cardFromQR) {
+    input.value = cardFromQR.toUpperCase();
+  }
+
+  async function getCurrentUser() {
+    const {
+      data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    return user;
+  }
+
+  form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const cardId = input.value.trim().toUpperCase();
+
+    message.textContent = "Checking card...";
+
+    const { data: card, error: cardError } = await supabaseClient
+      .from("cards")
+      .select("id, name")
+      .eq("id", cardId)
+      .maybeSingle();
+
+    if (cardError) {
+      console.error(cardError);
+      message.textContent = "Something went wrong. Please try again.";
+      return;
     }
 
-    form.addEventListener("submit", async function(event) {
-      event.preventDefault();
+    if (!card) {
+      message.textContent = "We couldn't find a card with that ID.";
+      return;
+    }
 
-      const cardId = input.value.trim().toUpperCase();
+    const user = await getCurrentUser();
 
-      message.textContent = "Checking card...";
-
-      const { data: card, error } = await supabaseClient
-        .from("cards")
-        .select("id, name")
-        .eq("id", cardId)
-        .maybeSingle();
-
-      if (error) {
-        console.error(error);
-        message.textContent = "Something went wrong. Please try again.";
-        return;
-      }
-
-      if (!card) {
-        message.textContent = "We couldn't find a card with that ID.";
-        return;
-      }
-
+    if (!user) {
       message.innerHTML = `
         <div class="card-found">
           <small>Card found</small>
           <strong>${card.name}</strong>
           <span>${card.id}</span>
+
+          <a
+            href="login.html?card=${encodeURIComponent(card.id)}"
+            class="register-link"
+          >
+            Sign in to register this card
+          </a>
         </div>
       `;
-    });
-  </script>
+
+      return;
+    }
+
+    const { data: existing, error: existingError } = await supabaseClient
+      .from("ownerships")
+      .select("id")
+      .eq("owner_id", user.id)
+      .eq("card_id", card.id)
+      .eq("active", true);
+
+    if (existingError) {
+      console.error(existingError);
+      message.textContent = "Something went wrong. Please try again.";
+      return;
+    }
+
+    if (existing && existing.length > 0) {
+      message.innerHTML = `
+        <div class="card-found">
+          <small>You already own this card</small>
+          <strong>${card.name}</strong>
+          <span>
+            You currently have ${existing.length}
+            registered ${existing.length === 1 ? "copy" : "copies"}.
+          </span>
+
+          <button
+            type="button"
+            id="register-another"
+            class="secondary-action"
+          >
+            Register another physical copy
+          </button>
+        </div>
+      `;
+
+      document
+        .getElementById("register-another")
+        .addEventListener("click", function() {
+          registerOwnership(card.id);
+        });
+
+      return;
+    }
+
+    registerOwnership(card.id);
+  });
+
+  async function registerOwnership(cardId) {
+
+    message.textContent = "Registering card...";
+
+    const { data, error } = await supabaseClient
+      .rpc("register_card", {
+        p_card_id: cardId
+      });
+
+    if (error) {
+      console.error(error);
+
+      message.textContent =
+        "We couldn't register the card. Please try again.";
+
+      return;
+    }
+
+    message.innerHTML = `
+      <div class="card-found">
+        <small>Registration complete</small>
+        <strong>Card added to your Vault.</strong>
+        <span>${cardId}</span>
+
+        <a
+          href="vault.html"
+          class="register-link"
+        >
+          View My Vault
+        </a>
+      </div>
+    `;
+  }
+</script>
 
 </body>
 </html>
