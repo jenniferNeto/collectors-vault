@@ -9,32 +9,175 @@ body {
 }
 
 body {
-  background: #0e0e0f;
-  color: #f4f2f4;
+  background: #0d0d0f;
+  color: #f5f5f5;
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.register-page {
+.page {
   min-height: 100vh;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  padding: 30px 20px;
+  padding: 24px;
 }
 
-.register-panel {
+.register-card {
   width: 100%;
-  max-width: 520px;
-
+  max-width: 480px;
   background: #171719;
-
-  border: 1px solid #303034;
+  border: 1px solid #2c2c31;
   border-radius: 18px;
-
   overflow: hidden;
 }
+
+.brand {
+  text-align: center;
+  padding: 28px 24px;
+  border-bottom: 1px solid #2c2c31;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.brand p {
+  margin: 6px 0 0;
+  color: #8d8d94;
+  font-size: 0.9rem;
+}
+
+.content {
+  padding: 40px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #8d8d94;
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+}
+
+h2 {
+  margin: 0;
+  font-size: 2.2rem;
+}
+
+.description {
+  margin: 12px 0 28px;
+  color: #aaaab0;
+  line-height: 1.6;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 14px 15px;
+  border: 1px solid #38383d;
+  border-radius: 9px;
+  background: #0f0f11;
+  color: #ffffff;
+  font: inherit;
+  text-transform: uppercase;
+}
+
+input:focus {
+  outline: none;
+  border-color: #777780;
+}
+
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #f3f3f3;
+  color: #111111;
+  font: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ffffff;
+}
+
+#message {
+  margin-top: 18px;
+}
+
+.card-found {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  background: #202024;
+  border: 1px solid #34343a;
+  border-radius: 9px;
+}
+
+.card-found small {
+  color: #8d8d94;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.card-found strong {
+  margin-top: 4px;
+}
+
+.card-found span {
+  margin-top: 2px;
+  color: #8d8d94;
+  font-size: 0.85rem;
+}
+
+.signin {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #2c2c31;
+  text-align: center;
+  font-size: 0.88rem;
+  color: #8d8d94;
+}
+
+.signin a {
+  margin-left: 5px;
+  color: #f5f5f5;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.signin a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 540px) {
+  .page {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .register-card {
+    margin-top: 24px;
+  }
+
+  .content {
+    padding: 30px 24px;
+  }
+
+  h2 {
+    font-size: 1.9rem;
+  }
+}}
 
 .brand {
   text-align: center;
