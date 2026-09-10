@@ -40,6 +40,159 @@
             required
           >
 
+          <button type="submit" id="register-button">
+            Register Card
+          </button>
+
+        </form>
+
+        <div id="message"></div>
+
+        <div class="signin">
+          <a href="vault.html">View My Vault</a>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const form = document.getElementById("card-form");
+    const input = document.getElementById("card-id");
+    const message = document.getElementById("message");
+    const registerButton = document.getElementById("register-button");
+
+    const params = new URLSearchParams(window.location.search);
+    const cardFromQR = params.get("card");
+
+    if (cardFromQR) {
+      input.value = cardFromQR.toUpperCase();
+    }
+
+    async function getOrCreateUser() {
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+      if (user) {
+        return user;
+      }
+
+      const { data, error } =
+        await supabaseClient.auth.signInAnonymously();
+
+      if (error) {
+        throw error;
+      }
+
+      return data.user;
+    }
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const cardId = input.value.trim().toUpperCase();
+
+      registerButton.disabled = true;
+      message.textContent = "Checking card...";
+
+      const { data: card, error: cardError } =
+        await supabaseClient
+          .from("cards")
+          .select("id, name")
+          .eq("id", cardId)
+          .maybeSingle();
+
+      if (cardError) {
+        console.error(cardError);
+        message.textContent =
+          "Something went wrong. Please try again.";
+        registerButton.disabled = false;
+        return;
+      }
+
+      if (!card) {
+        message.textContent =
+          "We couldn't find a card with that ID.";
+        registerButton.disabled = false;
+        return;
+      }
+
+      try {
+        await getOrCreateUser();
+      } catch (error) {
+        console.error(error);
+        message.textContent =
+          "We couldn't create your Vault. Please try again.";
+        registerButton.disabled = false;
+        return;
+      }
+
+      message.textContent = "Registering card...";
+
+      const { data, error } =
+        await supabaseClient.rpc("register_card", {
+          p_card_id: card.id
+        });
+
+      if (error) {
+        console.error(error);
+
+        message.innerHTML = `
+          <div class="card-found">
+            <small>Registration issue</small>
+            <strong>${error.message}</strong>
+          </div>
+        `;
+
+        registerButton.disabled = false;
+        return;
+      }
+
+      message.innerHTML = `
+        <div class="card-found">
+          <small>Card registered</small>
+          <strong>${card.name}</strong>
+          <span>${card.id}</span>
+
+          <a href="vault.html" class="register-link">
+            View My Vault
+          </a>
+        </div>
+
+        <div class="card-found" style="margin-top:12px;">
+          <small>Protect your collection</small>
+          <strong>Your Vault is currently saved on this device.</strong>
+          <span>
+            Later, you can add an email so you can recover your Vault
+            on another device.
+          </span>
+        </div>
+      `;
+
+      form.reset();
+
+      registerButton.disabled = false;
+    });
+  </script>
+
+</body>
+</html>            id="card-id"
+            placeholder="SW-XXXXXXXX"
+            autocomplete="off"
+            required
+          >
+
           <button type="submit">
             Register Card
           </button>
